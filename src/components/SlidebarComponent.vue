@@ -59,7 +59,7 @@ export default {
 }
 
 
-@media (max-width: 768px) {
+@media (max-width: 1204px) {
   .barra-lateral {
     width: 100%;
     height: auto;

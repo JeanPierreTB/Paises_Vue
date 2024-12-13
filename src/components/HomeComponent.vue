@@ -1,9 +1,7 @@
 <template>
     <div class="container">
-      
-  
       <div class="contenido">
-        <div class="barra-busqueda" :class="{ 'hidden': selectedCountry }" @click.stop="toggleDropdown(true)" ref="searchBar">
+        <div class="barra-busqueda" @click.stop="toggleDropdown(true)" ref="searchBar">
           <input 
             v-model="searchQuery" 
             @focus="toggleDropdown(true)"
@@ -33,15 +31,22 @@
               :pais="country"
               :imageSrc="countryImages[country.code] || 'https://via.placeholder.com/320x240.png?text=Loading...'"
               @click="showCountryDetails(country)"
+              :class="{ highlighted: selectedCountry && selectedCountry.code === country.code }"
             />
           </div>
   
           <div v-if="selectedCountry" class="country-details">
             <button class="close-details" @click="closeCountryDetails">X</button>
             <div class="country-image">
-              <img :src="countryImages[selectedCountry.code] || 'https://via.placeholder.com/320x240.png?text=No+Image'" alt="Country Image">
+              <img style="width: 20rem; height: 10rem;" :src="countryImages[selectedCountry.code] || 'https://via.placeholder.com/320x240.png?text=No+Image'" alt="Country Image">
             </div>
-            <h2>{{ selectedCountry.name }}</h2>
+            <div class="country-des">
+              <img :src="`https://flagcdn.com/w40/${selectedCountry.code.toLowerCase()}.png`" alt="Flag">
+              <div>
+                <h3>{{ selectedCountry.name }}</h3>
+                <h3>{{ selectedCountry.continent.name }}</h3>
+              </div>
+            </div>
             <p><strong>Capital:</strong> {{ selectedCountry.capital }}</p>
             <p><strong>Idioma:</strong> {{ selectedCountry.languages[0].name }}</p>
             <p><strong>Moneda:</strong> {{ selectedCountry.currency }}</p>
@@ -54,6 +59,8 @@
   <script>
   import gql from 'graphql-tag';
   import CardPais from './CardPaisComponent.vue';
+  import 'core-js/features/array/includes';
+
   
   export default {
     components: {
@@ -84,7 +91,7 @@
   
           this.continents = [
             { code: 'EU', name: 'Europe' },
-            { code: 'NA', name: 'America' },
+            { code: 'AM', name: 'America',includes:['NA','SA']},
             { code: 'AS', name: 'Asia' },
             { code: 'OC', name: 'Oceania' },
             { code: 'AF', name: 'Africa' }
@@ -132,12 +139,21 @@
         }
       },
       searchCountries() {
-        const query = this.searchQuery.trim().toLowerCase();
-        this.filteredCountries = this.countries.filter(country =>
-          country.name.toLowerCase().includes(query) &&
-          (this.selectedContinents.length === 0 || this.selectedContinents.includes(country.continent.code))
-        );
-      },
+          const query = this.searchQuery.trim().toLowerCase();
+
+          this.filteredCountries = this.countries.filter(country => {
+            const continentMatch = this.selectedContinents.length === 0 || 
+              this.selectedContinents.some(continentCode => {
+                const continent = this.continents.find(c => c.code === continentCode);
+                return continent.includes 
+                  ? continent.includes.includes(country.continent.code) 
+                  : country.continent.code === continentCode;
+              });
+
+            return country.name.toLowerCase().includes(query) && continentMatch;
+          });
+        },
+
       toggleContinent(continentCode) {
         const index = this.selectedContinents.indexOf(continentCode);
         if (index === -1) {
@@ -225,10 +241,7 @@
     margin-bottom: 20px; 
   }
   
-  .barra-busqueda.hidden {
-    opacity: 0;
-    pointer-events: none;
-  }
+ 
   
   .barra-busqueda i {
     margin-right: 10px;
@@ -299,10 +312,10 @@
   
   .country-details {
     position: fixed; 
-    top: 10px; 
+    top: 90px; 
     right: 0;
     width: 300px;
-    height: calc(100vh - 20px); 
+    height: calc(100vh - 50px); 
     padding: 20px;
     background-color: white;
     border-radius: 10px;
@@ -310,9 +323,21 @@
     overflow-y: auto; 
     z-index: 1000; 
   }
-  
-  
-  
+
+
+  .country-des{
+    display: flex;
+    align-items: center;
+    gap:2rem;
+  }
+
+  .highlighted {
+  background-color: skyblue; 
+  transform: scale(1.05); 
+  transition: transform 0.3s ease, background-color 0.3s ease;
+  }
+
+
   .country-details h2 {
     margin-top: 0;
   }
@@ -345,7 +370,7 @@
     border-radius: 5px;
   }
   
-  @media (max-width: 768px) {
+  @media (max-width: 1204px) {
     .container {
       flex-direction: column;
     }
@@ -367,13 +392,23 @@
     .country-details {
       flex: none;
       margin-left: 0;
-      width: 100%;
+      width: 20%;
       max-width: none;
+      top:170px;
+      right: 120px;
     }
   
-  
-    
-  
-    
   }
+
+
+@media (max-width:1248px){
+  .country-details {
+      flex: none;
+      margin-left: 0;
+      width: 20%;
+      max-width: none;
+      top:100px;
+      right: 7%;
+    }
+}
   </style>
