@@ -211,7 +211,7 @@
     flex-direction: row;
     width: 100%;
     min-height: 100vh;
-    background-color: rgb(139, 130, 130);
+    background-color: aquamarine;
     margin: 0;
   }
   
